@@ -78,13 +78,18 @@ public class Client extends JFrame implements ActionListener, KeyListener{
      * Método usado para conectar no server socket, retorna IO Exception caso dê algum erro.
      * @throws IOException
      */
-    public void conectar() throws IOException{
-        socket = new Socket(txtIP.getText(),Integer.parseInt(txtPorta.getText()));
-        ou = socket.getOutputStream();
-        ouw = new OutputStreamWriter(ou);
-        bfw = new BufferedWriter(ouw);
-        bfw.write(txtNome.getText()+"\r\n");
-        bfw.flush();
+    public void conectar() {
+        try{
+            socket = new Socket(txtIP.getText(),Integer.parseInt(txtPorta.getText()));
+            ou = socket.getOutputStream();
+            ouw = new OutputStreamWriter(ou);
+            bfw = new BufferedWriter(ouw);
+            bfw.write(txtNome.getText()+"\r\n");
+            bfw.flush();
+        }catch (IOException err){
+            System.out.println(err.getCause());
+            System.exit(0);
+        }
     }
 
     /***
@@ -93,13 +98,13 @@ public class Client extends JFrame implements ActionListener, KeyListener{
      * @throws IOException retorna IO Exception caso dê algum erro.
      */
     public void enviarMensagem(String msg) throws IOException{
-
         if(msg.equals("exit")){
-            bfw.write("Desconectado \r\n");
-            texto.append("Desconectado \r\n");
+            bfw.write("exit");
+            texto.append("Desconectando ...\r\n");
+            sair();
         }else{
             bfw.write(msg+"\r\n");
-            texto.append( txtNome.getText() + " diz -> " +         txtMsg.getText()+"\r\n");
+            texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
         }
         bfw.flush();
         txtMsg.setText("");
@@ -130,11 +135,11 @@ public class Client extends JFrame implements ActionListener, KeyListener{
      * @throws IOException retorna IO Exception caso dê algum erro.
      */
     public void sair() throws IOException{
-        enviarMensagem("exit");
         bfw.close();
         ouw.close();
         ou.close();
         socket.close();
+        System.exit(0);
     }
 
     @Override
@@ -144,7 +149,7 @@ public class Client extends JFrame implements ActionListener, KeyListener{
                 enviarMensagem(txtMsg.getText());
             else
             if(e.getActionCommand().equals(btnSair.getActionCommand()))
-                sair();
+                enviarMensagem("exit");
         } catch (IOException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -153,7 +158,6 @@ public class Client extends JFrame implements ActionListener, KeyListener{
 
     @Override
     public void keyPressed(KeyEvent e) {
-
         if(e.getKeyCode() == KeyEvent.VK_ENTER){
             try {
                 enviarMensagem(txtMsg.getText());

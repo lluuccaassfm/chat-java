@@ -33,6 +33,8 @@ public class Server extends Thread{
             in  = con.getInputStream();
             inr = new InputStreamReader(in);
             bfr = new BufferedReader(inr);
+            nome = bfr.readLine();
+            System.out.printf("Cliente %s conectado... \n",nome);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,20 +44,24 @@ public class Server extends Thread{
      * Método run
      */
     public void run(){
-
         try {
             String msg;
             OutputStream ou =  this.con.getOutputStream();
             Writer ouw = new OutputStreamWriter(ou);
             BufferedWriter bfw = new BufferedWriter(ouw);
             clientes.add(bfw);
-            nome = msg = bfr.readLine();
 
-            while(!"exit".equalsIgnoreCase(msg) && msg != null) {
+            while(true) {
                 msg = bfr.readLine();
-                sendToAll(bfw, msg);
-                System.out.println(msg);
+                if(msg.equals("exit")){
+                    break;
+                }else{
+                    sendToAll(bfw, msg);
+                    System.out.println(msg);
+                }
             }
+
+            System.out.println(nome + " ecerrou a conexão!");
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -100,7 +106,6 @@ public class Server extends Thread{
             while(true){
                 System.out.println("Aguardando conexão...");
                 Socket con = server.accept();
-                System.out.println("Cliente conectado...");
                 Thread t = new Server(con);
                 t.start();
             }
