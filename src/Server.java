@@ -32,7 +32,8 @@ public class Server extends Thread{
             inr = new InputStreamReader(in);
             bfr = new BufferedReader(inr);
             nickName = bfr.readLine();
-            verifyNikName(bfw);
+            verifyNickName(bfw);
+            System.out.println("*** Nicks: "+nickNames.toString());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -54,16 +55,20 @@ public class Server extends Thread{
 
                 while (true) {
                     msg = bfr.readLine();
-
-                    if (msg.equals("exit")) {
+                    try{
+                        if (msg.equals("exit")) {
+                            break;
+                        } else {
+                            sendToAll(bfwT, msg);
+                            System.out.println(msg);
+                        }
+                    }catch (NullPointerException erro){
                         break;
-                    } else {
-                        sendToAll(bfwT, msg);
-                        System.out.println(msg);
                     }
                 }
 
                 System.out.println(nickName + " ecerrou a conexão!");
+                nickNames.remove(nickName);
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -86,7 +91,7 @@ public class Server extends Thread{
         }
     }
 
-    public void verifyNikName(BufferedWriter bwSaida) throws IOException {
+    public void verifyNickName(BufferedWriter bwSaida) throws IOException {
         for(String nk : nickNames){
             if(nk.equals(nickName)){
                 System.out.printf("O NickName %s já existe!\n",nk);
