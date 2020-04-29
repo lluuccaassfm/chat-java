@@ -14,7 +14,7 @@ import java.io.Writer;
 import java.net.Socket;
 import javax.swing.*;
 
-public class Client extends JFrame implements ActionListener, KeyListener{
+public class Client3 extends JFrame implements ActionListener, KeyListener{
 
     private static final long serialVersionUID = 1L;
     private JTextArea texto;
@@ -35,7 +35,7 @@ public class Client extends JFrame implements ActionListener, KeyListener{
     private InputStreamReader inr;
     private BufferedReader bfr;
 
-    public Client() throws IOException{
+    public Client3() throws IOException{
         JLabel lblMessage = new JLabel("Login - Chat");
         txtIP = new JTextField("127.0.0.1");
         txtPorta = new JTextField("12345");
@@ -128,7 +128,7 @@ public class Client extends JFrame implements ActionListener, KeyListener{
             if (bfr.ready()) {
                 msg = bfr.readLine();
                 if (msg.contains("erro-name:")) {
-                    System.out.println(msg);
+                    System.out.println("Esse NickName já existe!");
                     sair();
                     break;
                 } else {
@@ -148,12 +148,6 @@ public class Client extends JFrame implements ActionListener, KeyListener{
         ou.close();
         socket.close();
         System.exit(0);
-    }
-
-    public void newConnection() throws IOException {
-        Client newClient = new Client();
-        newClient.conectar();
-        newClient.escutar();
     }
 
     @Override

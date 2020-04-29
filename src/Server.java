@@ -1,11 +1,4 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -15,13 +8,16 @@ import javax.swing.JTextField;
 
 
 public class Server extends Thread{
-    private static ArrayList<BufferedWriter>clientes;
+    private static ArrayList<BufferedWriter> clientes;
     private static ServerSocket server;
-    private String nome;
+    private static ArrayList<String> nickNames;
+    private String nickName;
     private Socket con;
     private InputStream in;
     private InputStreamReader inr;
     private BufferedReader bfr;
+    private Writer ouw;
+    private BufferedWriter bfw;
 
     /**
      * Método construtor
@@ -30,11 +26,15 @@ public class Server extends Thread{
     public Server(Socket con){
         this.con = con;
         try {
+            ouw = new OutputStreamWriter(con.getOutputStream());
+            bfw = new BufferedWriter(ouw);
             in  = con.getInputStream();
             inr = new InputStreamReader(in);
             bfr = new BufferedReader(inr);
-            nome = bfr.readLine();
-            System.out.printf("Cliente %s conectado... \n",nome);
+            nickName = bfr.readLine();
+            verifyNickName(bfw);
+            System.out.println("*** Nicks: "+nickNames.toString());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,26 +43,33 @@ public class Server extends Thread{
     /**
      * Método run
      */
-    public void run(){
+    @Override
+    public void run() {
         try {
-            String msg;
-            OutputStream ou =  this.con.getOutputStream();
-            Writer ouw = new OutputStreamWriter(ou);
-            BufferedWriter bfw = new BufferedWriter(ouw);
-            clientes.add(bfw);
+            if (!this.con.isClosed()) {
+                String msg;
+                OutputStream ouT =  this.con.getOutputStream();
+                Writer ouwT = new OutputStreamWriter(ouT);
+                BufferedWriter bfwT = new BufferedWriter(ouwT);
+                clientes.add(bfwT);
 
-            while(true) {
-                msg = bfr.readLine();
-                if(msg.equals("exit")){
-                    break;
-                }else{
-                    sendToAll(bfw, msg);
-                    System.out.println(msg);
+                while (true) {
+                    msg = bfr.readLine();
+                    try{
+                        if (msg.equals("exit")) {
+                            break;
+                        } else {
+                            sendToAll(bfwT, msg);
+                            System.out.println(msg);
+                        }
+                    }catch (NullPointerException erro){
+                        break;
+                    }
                 }
+
+                System.out.println(nickName + " ecerrou a conexão!");
+                nickNames.remove(nickName);
             }
-
-            System.out.println(nome + " ecerrou a conexão!");
-
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,15 +83,26 @@ public class Server extends Thread{
      */
     public void sendToAll(BufferedWriter bwSaida, String msg) throws  IOException
     {
-        BufferedWriter bwS;
-
         for(BufferedWriter bw : clientes){
-            bwS = (BufferedWriter)bw;
-            if(!(bwSaida == bwS)){
-                bw.write(nome + " -> " + msg+"\r\n");
+            if(!(bwSaida == bw)){
+                bw.write(nickName + " -> " + msg+"\r\n");
                 bw.flush();
             }
         }
+    }
+
+    public void verifyNickName(BufferedWriter bwSaida) throws IOException {
+        for(String nk : nickNames){
+            if(nk.equals(nickName)){
+                System.out.printf("O NickName %s já existe!\n",nk);
+                bwSaida.write("erro-name: Nikname já existe!");
+                bwSaida.close();
+                return;
+            }
+        }
+
+        System.out.printf("Cliente %s conectado... \n", nickName);
+        nickNames.add(nickName);
     }
 
     /***
@@ -100,8 +118,10 @@ public class Server extends Thread{
             JOptionPane.showMessageDialog(null, texts);
             server = new ServerSocket(Integer.parseInt(txtPorta.getText()));
             clientes = new ArrayList<BufferedWriter>();
-            JOptionPane.showMessageDialog(null,"Servidor ativo na porta: "+
-                    txtPorta.getText());
+            JOptionPane.showMessageDialog(null,"Servidor ativo na porta: "+ txtPorta.getText());
+            System.out.println("Servidor ativo na porta: "+ txtPorta.getText());
+
+            nickNames = new ArrayList<>();
 
             while(true){
                 System.out.println("Aguardando conexão...");
