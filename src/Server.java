@@ -62,6 +62,12 @@ public class Server extends Thread{
                             sendToAll(bfwT, msg);
                             System.out.println(msg);
                         }
+                        if (msg.startsWith("\\changename")) {
+                            msg = msg.substring(11);
+                            sendToAll(bfwT,"trocou de nome para: " +msg);
+                            nickName = msg;
+                            verifyNickName(bfwT);
+                        }
                     }catch (NullPointerException erro){
                         break;
                     }

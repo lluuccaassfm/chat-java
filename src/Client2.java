@@ -106,7 +106,14 @@ public class Client2 extends JFrame implements ActionListener, KeyListener{
             bfw.write("exit");
             texto.append("Desconectando ...\r\n");
             sair();
-        }else{
+        }if (msg.startsWith("\\changename")) {
+            bfw.write(msg+"\r\n");
+            texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
+
+            msg     = msg.substring(11);
+            txtNome.setText(msg);
+        }
+        else{
             bfw.write(msg+"\r\n");
             texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
         }
