@@ -106,15 +106,9 @@ public class Client extends JFrame implements ActionListener, KeyListener{
             bfw.write("exit");
             texto.append("Desconectando ...\r\n");
             sair();
-        }if (msg.startsWith("\\changename")) {
+        } else if(msg.contains("\\changename ")){
             bfw.write(msg+"\r\n");
-            texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
-
-            msg     = msg.substring(11);
-            txtNome.setText(msg);
-        }
-        
-        else{
+        }else{
             bfw.write(msg+"\r\n");
             texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
         }
@@ -139,7 +133,12 @@ public class Client extends JFrame implements ActionListener, KeyListener{
                     System.out.println(msg);
                     sair();
                     break;
-                } else {
+                }else if(msg.contains("alter-nick ok")){
+                    texto.append( msg+"\r\n");
+                    String newNome = msg.substring(15);
+                    txtNome.setText(newNome);
+                    setTitle(txtNome.getText());
+                }else{
                     texto.append(msg + "\r\n");
                 }
             }

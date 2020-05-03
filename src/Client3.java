@@ -106,14 +106,9 @@ public class Client3 extends JFrame implements ActionListener, KeyListener{
             bfw.write("exit");
             texto.append("Desconectando ...\r\n");
             sair();
-        }if (msg.startsWith("\\changename")) {
+        } else if(msg.contains("\\changename ")){
             bfw.write(msg+"\r\n");
-            texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
-
-            msg     = msg.substring(11);
-            txtNome.setText(msg);
-        }
-        else{
+        }else{
             bfw.write(msg+"\r\n");
             texto.append( txtNome.getText() + " -> " + txtMsg.getText()+"\r\n");
         }
@@ -135,10 +130,15 @@ public class Client3 extends JFrame implements ActionListener, KeyListener{
             if (bfr.ready()) {
                 msg = bfr.readLine();
                 if (msg.contains("erro-name:")) {
-                    System.out.println("Esse NickName já existe!");
+                    System.out.println(msg);
                     sair();
                     break;
-                } else {
+                }else if(msg.contains("alter-nick ok")){
+                    texto.append( msg+"\r\n");
+                    String newNome = msg.substring(15);
+                    txtNome.setText(newNome);
+                    setTitle(txtNome.getText());
+                }else{
                     texto.append(msg + "\r\n");
                 }
             }
@@ -155,6 +155,12 @@ public class Client3 extends JFrame implements ActionListener, KeyListener{
         ou.close();
         socket.close();
         System.exit(0);
+    }
+
+    public void newConnection() throws IOException {
+        Client newClient = new Client();
+        newClient.conectar();
+        newClient.escutar();
     }
 
     @Override

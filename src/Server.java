@@ -37,7 +37,6 @@ public class Server extends Thread {
             nickName = bfr.readLine();
             verifyNickName(bfw);
             System.out.println("*** Nicks: " + nickNames.toString());
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,10 +62,7 @@ public class Server extends Thread {
                         if (msg.equals("exit")) {
                             break;
                         } else if (msg.startsWith("\\changename")) {
-                            msg = msg.substring(11);
-                            sendToAll(bfwT, "trocou de nome para: " + msg);
-                            nickName = msg;
-                            verifyNickName(bfwT);
+                            changeName(bfwT, msg.substring(12));
                         } else if (msg.startsWith("\\sendto:")) {
                             msg = msg.substring(8, msg.length());
                             String[] nomeDestinatario   = msg.split(" ");
@@ -74,7 +70,7 @@ public class Server extends Thread {
                             sendPrivate(destinatario, msg);
                         } else {
                             sendToAll(bfwT, msg);
-                            System.out.println(msg);
+                            System.out.println(nickName+": "+msg);
                         }
                     } catch (NullPointerException erro) {
                         break;
@@ -114,18 +110,46 @@ public class Server extends Thread {
         }
     }
 
+    //Método para verificar se o nome já está cadastrado
     public void verifyNickName(BufferedWriter bwSaida) throws IOException {
         for (String nk : nickNames) {
             if (nk.equals(nickName)) {
                 System.out.printf("O NickName %s já existe!\n", nk);
                 bwSaida.write("erro-name: Nikname já existe!");
                 bwSaida.close();
-                return;
+                return ;
             }
         }
 
         System.out.printf("Cliente %s conectado... \n", nickName);
         nickNames.add(nickName);
+    }
+
+    //método para alterar o nickname
+    public void changeName(BufferedWriter bwSaida, String newName) throws IOException {
+        if(nickNames.contains(newName)){
+            System.out.println(nickName+ " tentou trocar de nickname, porém o nick "+newName+" já existe!");
+            String msgErro = "alter-nick erro: nome já existe";
+            this.enviarMenssagem(bwSaida, msgErro);
+        }else{
+            String msgOk = "alter-nick ok: "+ newName;
+            enviarMenssagem(bwSaida, msgOk );
+            nickNames.remove(nickName);
+            nickNames.add(newName);
+            sendToAll(bwSaida, "trocou de nome para: " + newName);
+            System.out.println(nickName+" trocou de nome para : "+newName);
+            nickName = newName;
+        }
+    }
+
+    //envia uma menssagem para o uruário atual
+    public void enviarMenssagem(BufferedWriter bwS, String msg) throws IOException {
+        for (BufferedWriter bw : clientes) {
+            if (bwS == bw) {
+                bw.write(msg +"\r\n");
+                bw.flush();
+            }
+        }
     }
 
     /***
