@@ -77,7 +77,7 @@ public class Server extends Thread {
                     }
                 }
 
-                System.out.println(nickName + " ecerrou a conexão!");
+                System.out.println(nickName + " encerrou a conexão!");
                 nickNames.remove(nickName);
             }
         } catch (Exception e) {
